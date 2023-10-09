@@ -70,31 +70,18 @@ int       motor2Speed = 60;// variable holding the light output vlaue (initial v
 const int motor2MinimumSpeed=20;
 const int motor2MaximumSpeed=100;
 int       motor2StopState=HIGH;//Stope state of motor (HIGH means STOP) and LOW means Start
-
+int Gas_sensor_CO;
+int Gas_sensor_Me;
 
 const char *ssid = "Skyguy";
 const char *password = "TheForce";
 
 WebServer server(80);
 
-const int led = 13; // unused
-// #define DHTPIN 14   // Pin connected to DHT sensor
-// #define DHTTYPE DHT22  
-// DHT dht(DHTPIN, DHTTYPE);
+const int led = 13; 
+#define sensor1 32
+#define sensor2 34
 
-// MQ sensor settings
-#define METHANE_SENSOR_AOUT 32  // Analog pin connected to MQ Methane sensor
-#define CO_SENSOR_AOUT 34       // Analog pin connected to MQ Carbon Monoxide sensor
-#define MQ_SENSOR_RL 10.0       // Load resistance value for MQ sensors
-
-const int MQ4 = 4;
-const int MQ7 = 7; 
-MQUnifiedsensor methaneSensor("MQ-4", METHANE_SENSOR_AOUT, MQ_SENSOR_RL, MQ4);
-MQUnifiedsensor coSensor("MQ-7", CO_SENSOR_AOUT, MQ_SENSOR_RL, MQ7);
-
-
-// float Temperature = 0.0;
-// float Humidity = 0.0;
 float Methane = 0.0;
 float CarbonMonoxide = 0.0;
 
@@ -330,6 +317,8 @@ void handleNotFound() {
 
 void setup(void) {
   Serial.begin(115200);
+  pinMode(sensor1,INPUT);
+  pinMode(sensor2,INPUT);
   motor.begin();
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -379,18 +368,10 @@ void loop(void) {
   }else{
      motor.rotate(motor2, motor2Speed, motor2Direction);//run motor2 at motor2Speed% speed in motor2Direction 
   }
-  // float temperature = dht.readTemperature();
-  // float humidity = dht.readHumidity();
-
-  // Read methane and carbon monoxide levels from MQ sensors
-  float methaneLevel = methaneSensor.readSensor();
-  float carbonMonoxide = coSensor.readSensor();
-
-  // Update the sensor data variables
-  // Temperature = temperature;
-  // Humidity = humidity;
-  Methane = methaneLevel;
-  CarbonMonoxide = carbonMonoxide;
+  Gas_sensor_CO=analogRead(sensor1);
+  Gas_sensor_Me=analogRead(sensor2);
+  Methane = Gas_sensor_CO;
+  CarbonMonoxide = Gas_sensor_Me;
   delay(100);  
 }
 void handleMotorSpeed() {
