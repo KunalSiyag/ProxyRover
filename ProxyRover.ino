@@ -87,6 +87,8 @@ DHT dht(DHTPIN, DHTTYPE);
 #define CO_SENSOR_AOUT 35       // Analog pin connected to MQ Carbon Monoxide sensor
 #define MQ_SENSOR_RL 10.0       // Load resistance value for MQ sensors
 
+const int MQ4 = 4;
+const int MQ7 = 7; 
 MQUnifiedsensor methaneSensor("MQ-4", METHANE_SENSOR_AOUT, MQ_SENSOR_RL, MQ4);
 MQUnifiedsensor coSensor("MQ-7", CO_SENSOR_AOUT, MQ_SENSOR_RL, MQ7);
 
@@ -99,238 +101,256 @@ float CarbonMonoxide = 0.0;
 
 void handleRoot() {
   String HTML_page = "<!DOCTYPE html>\n";
-  HTML_page += "<html lang='en'>\n";
-  HTML_page += "<head>\n";
-  HTML_page += "<meta charset='UTF-8'>\n";
-  HTML_page += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>\n";
-  HTML_page += "<title>Rover</title>\n";
-  HTML_page += "<style>\n";
-  HTML_page += " * {
-            box-sizing: border-box;
-            text-align: center;
-            font-size: medium;
-            font-weight: bold;
-        }
-        .App {
-            display: flex;
-            margin-top: 100px;
-            border: 10px solid black;
-            height: 80vh;
-            align-items: center;
-            justify-content: center;
-            border-radius: 40px;
-        }
-        .Sensor {
-            flex: 1;
-            text-align: left;
-            padding-left: 20px;
-        }
-        .Controls {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-        .button {
-            all: unset;
-            width: 100px;
-            height: 30px;
-            font-size: 16px;
-            background: transparent;
-            border: none;
-            position: relative;
-            color: #f0f0f0;
-            cursor: pointer;
-            z-index: 1;
-            padding: 10px 20px;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-            margin: 10px;
-        }
-        .button::after,
-        .button::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            z-index: -99999;
-            transition: all .4s;
-        }
-        .button::before {
-            transform: translate(0%, 0%);
-            width: 100%;
-            height: 100%;
-            background: #28282d;
-            border-radius: 10px;
-        }
-       .button::after {
-            transform: translate(10px, 10px);
-            width: 35px;
-            height: 35px;
-            background: #ffffff15;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border-radius: 50px;
-        }
-        .button:hover::before {
-            transform: translate(5%, 20%);
-            width: 110%;
-            height: 110%;
-        }
-        .button:hover::after {
-            border-radius: 10px;
-            transform: translate(0, 0);
-            width: 100%;
-            height: 100%;
-        }
-        .button:active::after {
-            transition: 0s;
-            transform: translate(0, 5%);
-        }
-        h1 {
-            color: #333333;
-            font-family: 'Bitter', serif;
-            font-size: 40px;
-            font-weight: normal;
-            line-height: 54px;
-            margin: 0 0 14px;
-        }
-        .motor1, .motor2 {
-            background-color: rgb(255, 255, 255);
-            border: 2px solid black;
-            border-radius: 10px;
-            width: 600px;
-            height: 370px;
-            margin: 10px;
-            padding: 10px;
-            text-align: center;
-        }
-        #rangeValue1, #rangeValue2 {
-            position: relative;
-            display: block;
-            text-align: center;
-            font-size: 6em;
-            color: #999;
-            font-weight: 400;
-        }
-        .range {
-            width: 400px;
-            height: 15px;
-            -webkit-appearance: none;
-            background: #111;
-            outline: none;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 1);
-        }
-        .range::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background: #1a2102;
-            cursor: pointer;
-            border: 4px solid #333;
-            box-shadow: -407px 0 0 400px #9e03c4;
-        }";
-  HTML_page += "</style>\n";
-  HTML_page += "</head>\n";
-  HTML_page += "<body>\n";
-  HTML_page += "<div class='App'>\n";
-  HTML_page += "<div class='Sensor'>
-            <div class='dht'>
-                <h1>Temperature: " + String(Temperature) + "°C</h1>
-                <h1>Humidity: "+ String(Humidity)+"%</h1>
-            </div>
-        <br/>
-            <div class='MQ'>
-                <h1>Methane Level: "+String(Methane)+"</h1>
-                <h1>Carbon Monoxide: " +String(CarbonMonoxide)+"</h1>
-            </div>
-        </div>";
-  HTML_page += "<div class = 'Controls">      
-  HTML_page += "<div class='motor1'>\n";
-  HTML_page += "<div class='Header'>\n";
-  HTML_page += "<h1>MOTOR 1 CONTROLS</h1>\n";
-  HTML_page += "<div>\n";
-  HTML_page += "<span id='rangeValue1'>" + String(motor1Speed) + "</span>\n";
-  HTML_page += "<input class='range' type='range' value='" + String(motor1Speed) + "' min='0' max='255' oninput='rangeSlide(this.value, \"rangeValue1\", \"do1\")'>\n";
-  HTML_page += "<a class='button' id='do1' href='/speed?do1=" + String(motor1Speed) + "'>Speed</a>\n";
-  HTML_page += "</div>\n";
-  HTML_page += "</div>\n";
-  HTML_page += "<div class='Footer'>\n";
-  HTML_page += "<h1>Direction</h1>\n";
-  HTML_page += "<a class='button' id='dir1' onclick='toggleDirection(\"dir1\")' href='/direction?dir=" + (motor1Direction == CW ? "m1CCW" : "m1CW") + "'>" + (motor1Direction == CW ? "Clockwise" : "Counter-Clockwise") + "</a>\n";
-  HTML_page += "<a class='button' id='StartStop1' onclick='toggleStartStop(\"StartStop1\")' href='/stop?do=" + (motor1StopState == HIGH ? "m1Start" : "m1Stop") + "'>" + (motor1StopState == HIGH ? "Start" : "Stop") + "</a>\n";
-  HTML_page += "</div>\n";
-  HTML_page += "</div>\n";
-  HTML_page += "<div class='motor2'>\n";
-  HTML_page += "<div class='Header'>\n";
-  HTML_page += "<h1>MOTOR 2 CONTROLS</h1>\n";
-  HTML_page += "<div>\n";
-  HTML_page += "<span id='rangeValue2'>" + String(motor2Speed) + "</span>\n";
-  HTML_page += "<input class='range' type='range' value='" + String(motor2Speed) + "' min='0' max='255' oninput='rangeSlide(this.value, \"rangeValue2\", \"do2\")'>\n";
-  HTML_page += "<a class='button' id='do2' href='/speed?do2=" + String(motor2Speed) + "'>Speed</a>\n";
-  HTML_page += "</div>\n";
-  HTML_page += "</div>\n";
-  HTML_page += "<div class='Footer'>\n";
-  HTML_page += "<h1>Direction</h1>\n";
-  HTML_page += "<a class='button' id='dir2' onclick='toggleDirection(\"dir2\")' href='/direction?dir=" + (motor2Direction == CW ? "m2CCW" : "m2CW") + "'>" + (motor2Direction == CW ? "Clockwise" : "Counter-Clockwise") + "</a>\n";
-  HTML_page += "<a class='button' id='StartStop2' onclick='toggleStartStop(\"StartStop2\")' href='/stop?do=" + (motor2StopState == HIGH ? "m2Start" : "m2Stop") + "'>" + (motor2StopState == HIGH ? "Start" : "Stop") + "</a>\n";
-  HTML_page += "</div>\n";
-  HTML_page += "</div>\n";
-  HTML_page += "</div>\n";
-  HTML_page += "</div>\n";
-  HTML_page += "<script type='text/javascript'>\n";
-  HTML_page += "function rangeSlide(value, id, linkId) {\n";
-  HTML_page += "document.getElementById(id).textContent = value;\n";
-  HTML_page += "var link = document.getElementById(linkId);\n";
-  HTML_page += "link.href = '/speed?' + linkId + '=' + value;\n";
-  HTML_page += "}\n";
-  HTML_page += " function toggleDirection(buttonId) {
-            var button = document.getElementById(buttonId);
-            if (button.innerHTML === "Clockwise") {
-                button.innerHTML = "Anti-Clockwise";
-                if (buttonId === "dir1") {
-                    button.setAttribute('href', '/direction?dir=m1CCW');
-                } else if (buttonId === "dir2") {
-                    button.setAttribute('href', '/direction?dir=m2CCW');
-                }
-            } else {
-                button.innerHTML = "Clockwise";
-                if (buttonId === "dir1") {
-                    button.setAttribute('href', '/direction?dir=m1CW');
-                } else if (buttonId === "dir2") {
-                    button.setAttribute('href', '/direction?dir=m2CW');
-                }
-            }
-        }
-        function toggleStartStop(buttonId) {
-            var button = document.getElementById(buttonId);
-            if (button.innerHTML === "Start") {
-                button.innerHTML = "Stop";
-                if (buttonId === "StartStop1") {
-                    button.setAttribute('href', '/stop?do=m1Stop');
-                } else if (buttonId === "StartStop2") {
-                    button.setAttribute('href', '/stop?do=m2Stop');
-                }
-            } else {
-                button.innerHTML = "Start";
-                if (buttonId === "StartStop1") {
-                    button.setAttribute('href', '/stop?do=m1Start');
-                } else if (buttonId === "StartStop2") {
-                    button.setAttribute('href', '/stop?do=m2Start');
-                }
-            }
-          }";
-  HTML_page += "</script>\n";
-  HTML_page += "</body>\n";
-  HTML_page += "</html>\n";
+HTML_page += "<html lang='en'>\n";
+HTML_page += "<head>\n";
+HTML_page += "<meta charset='UTF-8'>\n";
+HTML_page += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>\n";
+HTML_page += "<title>Rover</title>\n";
+HTML_page += "<style>\n";
+HTML_page += " * {";
+HTML_page += "box-sizing: border-box;";
+HTML_page += "text-align: center;";
+HTML_page += "font-size: medium;";
+HTML_page += "font-weight: bold;";
+HTML_page += "}";
+HTML_page += ".App {";
+HTML_page += "display: flex;";
+HTML_page += "margin-top: 100px;";
+HTML_page += "border: 10px solid black;";
+HTML_page += "height: 80vh;";
+HTML_page += "align-items: center;";
+HTML_page += "justify-content: center;";
+HTML_page += "border-radius: 40px;";
+HTML_page += "}";
+HTML_page += ".Sensor {";
+HTML_page += "flex: 1;";
+HTML_page += "text-align: left;";
+HTML_page += "padding-left: 20px;";
+HTML_page += "}";
+HTML_page += ".Controls {";
+HTML_page += "flex: 1;";
+HTML_page += "display: flex;";
+HTML_page += "flex-direction: column;";
+HTML_page += "align-items: center;";
+HTML_page += "padding: 20px;";
+HTML_page += "}";
+HTML_page += ".button {";
+HTML_page += "all: unset;";
+HTML_page += "width: 100px;";
+HTML_page += "height: 30px;";
+HTML_page += "font-size: 16px;";
+HTML_page += "background: transparent;";
+HTML_page += "border: none;";
+HTML_page += "position: relative;";
+HTML_page += "color: #f0f0f0;";
+HTML_page += "cursor: pointer;";
+HTML_page += "z-index: 1;";
+HTML_page += "padding: 10px 20px;";
+HTML_page += "align-items: center;";
+HTML_page += "justify-content: center;";
+HTML_page += "white-space: nowrap;";
+HTML_page += "user-select: none;";
+HTML_page += "-webkit-user-select: none;";
+HTML_page += "touch-action: manipulation;";
+HTML_page += "margin: 10px;";
+HTML_page += "}";
+HTML_page += ".button::after,";
+HTML_page += ".button::before {";
+HTML_page += "content: '';";
+HTML_page += "position: absolute;";
+HTML_page += "bottom: 0;";
+HTML_page += "right: 0;";
+HTML_page += "z-index: -99999;";
+HTML_page += "transition: all .4s;";
+HTML_page += "}";
+HTML_page += ".button::before {";
+HTML_page += "transform: translate(0%, 0%);";
+HTML_page += "width: 100%;";
+HTML_page += "height: 100%;";
+HTML_page += "background: #28282d;";
+HTML_page += "border-radius: 10px;";
+HTML_page += "}";
+HTML_page += ".button::after {";
+HTML_page += "transform: translate(10px, 10px);";
+HTML_page += "width: 35px;";
+HTML_page += "height: 35px;";
+HTML_page += "background: #ffffff15;";
+HTML_page += "backdrop-filter: blur(5px);";
+HTML_page += "-webkit-backdrop-filter: blur(5px);";
+HTML_page += "border-radius: 50px;";
+HTML_page += "}";
+HTML_page += ".button:hover::before {";
+HTML_page += "transform: translate(5%, 20%);";
+HTML_page += "width: 110%;";
+HTML_page += "height: 110%;";
+HTML_page += "}";
+HTML_page += ".button:hover::after {";
+HTML_page += "border-radius: 10px;";
+HTML_page += "transform: translate(0, 0);";
+HTML_page += "width: 100%;";
+HTML_page += "height: 100%;";
+HTML_page += "}";
+HTML_page += ".button:active::after {";
+HTML_page += "transition: 0s;";
+HTML_page += "transform: translate(0, 5%);";
+HTML_page += "}";
+HTML_page += "h1 {";
+HTML_page += "color: #333333;";
+HTML_page += "font-family: 'Bitter', serif;";
+HTML_page += "font-size: 40px;";
+HTML_page += "font-weight: normal;";
+HTML_page += "line-height: 54px;";
+HTML_page += "margin: 0 0 14px;";
+HTML_page += "}";
+HTML_page += ".motor1, .motor2 {";
+HTML_page += "background-color: rgb(255, 255, 255);";
+HTML_page += "border: 2px solid black;";
+HTML_page += "border-radius: 10px;";
+HTML_page += "width: 600px;";
+HTML_page += "height: 370px;";
+HTML_page += "margin: 10px;";
+HTML_page += "padding: 10px;";
+HTML_page += "text-align: center;";
+HTML_page += "}";
+HTML_page += ".rangeValue1, .rangeValue2 {";
+HTML_page += "position: relative;";
+HTML_page += "display: block;";
+HTML_page += "text-align: center;";
+HTML_page += "font-size: 6em;";
+HTML_page += "color: #999;";
+HTML_page += "font-weight: 400;";
+HTML_page += "}";
+HTML_page += ".range {";
+HTML_page += "width: 400px;";
+HTML_page += "height: 15px;";
+HTML_page += "-webkit-appearance: none;";
+HTML_page += "background: #111;";
+HTML_page += "outline: none;";
+HTML_page += "border-radius: 15px;";
+HTML_page += "overflow: hidden;";
+HTML_page += "box-shadow: inset 0 0 5px rgba(0, 0, 0, 1);";
+HTML_page += "}";
+HTML_page += ".range::-webkit-slider-thumb {";
+HTML_page += "-webkit-appearance: none;";
+HTML_page += "width: 15px;";
+HTML_page += "height: 15px;";
+HTML_page += "border-radius: 50%;";
+HTML_page += "background: #1a2102;";
+HTML_page += "cursor: pointer;";
+HTML_page += "border: 4px solid #333;";
+HTML_page += "box-shadow: -407px 0 0 400px #9e03c4;";
+HTML_page += "}";
+HTML_page += "</style>\n";
+HTML_page += "</head>\n";
+HTML_page += "<body>\n";
+HTML_page += "<div class='App'>\n";
+HTML_page += "<div class='Sensor'>\n";
+HTML_page += "<div class='dht'>\n";
+HTML_page += "<h1>Temperature: " + String(Temperature) + "°C</h1>\n";
+HTML_page += "<h1>Humidity: " + String(Humidity) + "%</h1>\n";
+HTML_page += "</div>\n";
+HTML_page += "<br/>\n";
+HTML_page += "<div class='MQ'>\n";
+HTML_page += "<h1>Methane Level: " + String(Methane) + "</h1>\n";
+HTML_page += "<h1>Carbon Monoxide: " + String(CarbonMonoxide) + "</h1>\n";
+HTML_page += "</div>\n";
+HTML_page += "</div>\n";
+HTML_page += "<div class='Controls'>\n";
+HTML_page += "<div class='motor1'>\n";
+HTML_page += "<div class='Header'>\n";
+HTML_page += "<h1>MOTOR 1 CONTROLS</h1>\n";
+HTML_page += "<div>\n";
+HTML_page += "<span class='rangeValue1'>" + String(motor1Speed) + "</span>\n";
+HTML_page += "<input class='range' type='range' value='" + String(motor1Speed) + "' min='0' max='255' oninput='rangeSlide(this.value, \"rangeValue1\", \"do1\")'>\n";
+HTML_page += "<a class='button' id='do1' href='/speed?do1=" + String(motor1Speed) + "'>Speed</a>\n";
+HTML_page += "</div>\n";
+HTML_page += "</div>\n";
+HTML_page += "<div class='Footer'>\n";
+HTML_page += "<h1>Direction</h1>\n";
+HTML_page += "<a class='button' id='dir2' onclick='toggleDirection(\"dir2\")' href='/direction?dir=";
+HTML_page += String(motor2Direction == CW ? "m2CCW" : "m2CW").c_str();
+HTML_page += "'>"; 
+HTML_page += String(motor2Direction == CW ? "Clockwise" : "Counter-Clockwise").c_str(); 
+HTML_page += "</a>\n";
+HTML_page += "<a class='button' id='StartStop2' onclick='toggleStartStop(\"StartStop2\")' href='/stop?do=";
+HTML_page += String(motor2StopState == HIGH ? "m2Start" : "m2Stop").c_str();
+HTML_page += "'>";
+HTML_page += String(motor2StopState == HIGH ? "Start" : "Stop").c_str();
+HTML_page +="</a>\n";
+HTML_page += "</div>\n";
+HTML_page += "</div>\n";
+HTML_page += "<div class='motor2'>\n";
+HTML_page += "<div class='Header'>\n";
+HTML_page += "<h1>MOTOR 2 CONTROLS</h1>\n";
+HTML_page += "<div>\n";
+HTML_page += "<span class='rangeValue2'>" + String(motor2Speed) + "</span>\n";
+HTML_page += "<input class='range' type='range' value='" + String(motor2Speed) + "' min='0' max='255' oninput='rangeSlide(this.value, \"rangeValue2\", \"do2\")'>\n";
+HTML_page += "<a class='button' id='do2' href='/speed?do2=" + String(motor2Speed) + "'>Speed</a>\n";
+HTML_page += "</div>\n";
+HTML_page += "</div>\n";
+HTML_page += "<div class='Footer'>\n";
+HTML_page += "<h1>Direction</h1>\n";
+HTML_page += "<a class='button' id='dir2' onclick='toggleDirection(\"dir2\")' href='/direction?dir=";
+HTML_page += String(motor2Direction == CW ? "m2CCW" : "m2CW").c_str(); 
+HTML_page +="'>";
+HTML_page +=String(motor2Direction == CW ? "Clockwise" : "Counter-Clockwise").c_str();
+HTML_page += "</a>\n";
+HTML_page += "<a class='button' id='StartStop2' onclick='toggleStartStop(\"StartStop2\")' href='/stop?do="; 
+HTML_page += String(motor2StopState == HIGH ? "m2Start" : "m2Stop").c_str(); 
+HTML_page += "'>"; 
+HTML_page += String(motor2StopState == HIGH ? "Start" : "Stop").c_str();
+HTML_page += "</a>\n";
+HTML_page += "</div>\n";
+HTML_page += "</div>\n";
+HTML_page += "</div>\n";
+HTML_page += "</div>\n";
+HTML_page += "</div>\n";
+HTML_page += "<script type='text/javascript'>\n";
+HTML_page += "function rangeSlide(value, id, linkId) {\n";
+HTML_page += "document.getElementById(id).textContent = value;\n";
+HTML_page += "var link = document.getElementById(linkId);\n";
+HTML_page += "link.href = '/speed?' + linkId + '=' + value;\n";
+HTML_page += "}\n";
+HTML_page += "function toggleDirection(buttonId) {\n";
+HTML_page += "var button = document.getElementById(buttonId);\n";
+HTML_page += "if (button.innerHTML === 'Clockwise') {\n";
+HTML_page += "button.innerHTML = 'Anti-Clockwise';\n";
+HTML_page += "if (buttonId === 'dir1') {\n";
+HTML_page += "button.setAttribute('href', '/direction?dir=m1CCW');\n";
+HTML_page += "} else if (buttonId === 'dir2') {\n";
+HTML_page += "button.setAttribute('href', '/direction?dir=m2CCW');\n";
+HTML_page += "}\n";
+HTML_page += "} else {\n";
+HTML_page += "button.innerHTML = 'Clockwise';\n";
+HTML_page += "if (buttonId === 'dir1') {\n";
+HTML_page += "button.setAttribute('href', '/direction?dir=m1CW');\n";
+HTML_page += "} else if (buttonId === 'dir2') {\n";
+HTML_page += "button.setAttribute('href', '/direction?dir=m2CW');\n";
+HTML_page += "}\n";
+HTML_page += "}\n";
+HTML_page += "}\n";
+HTML_page += "function toggleStartStop(buttonId) {\n";
+HTML_page += "var button = document.getElementById(buttonId);\n";
+HTML_page += "if (button.innerHTML === 'Start') {\n";
+HTML_page += "button.innerHTML = 'Stop';\n";
+HTML_page += "if (buttonId === 'StartStop1') {\n";
+HTML_page += "button.setAttribute('href', '/stop?do=m1Stop');\n";
+HTML_page += "} else if (buttonId === 'StartStop2') {\n";
+HTML_page += "button.setAttribute('href', '/stop?do=m2Stop');\n";
+HTML_page += "}\n";
+HTML_page += "} else {\n";
+HTML_page += "button.innerHTML = 'Start';\n";
+HTML_page += "if (buttonId === 'StartStop1') {\n";
+HTML_page += "button.setAttribute('href', '/stop?do=m1Start');\n";
+HTML_page += "} else if (buttonId === 'StartStop2') {\n";
+HTML_page += "button.setAttribute('href', '/stop?do=m2Start');\n";
+HTML_page += "}\n";
+HTML_page += "}\n";
+HTML_page += "}\n";
+HTML_page += "</script>\n";
+HTML_page += "</body>\n";
+HTML_page += "</html>\n";
+
 
   server.send(200, "text/html", HTML_page);
 }
@@ -421,11 +441,11 @@ void loop(void) {
   delay(100);  
 }
 void handleMotorSpeed() {
-    motor1Speed = server.arg("do1");
+    motor1Speed = server.arg("do1").toInt();
       if(motor1Speed < motor1MinimumSpeed){ motor1Speed = motor1MinimumSpeed; }
       if(motor1Speed > motor1MaximumSpeed){ motor1Speed =motor1MaximumSpeed; }
     
-    motor2Speed =server.arg("do2");
+    motor2Speed =server.arg("do2").toInt();
       if(motor2Speed < motor2MinimumSpeed){ motor2Speed = motor2MinimumSpeed; }
       if(motor2Speed > motor2MaximumSpeed){ motor2Speed =motor2MaximumSpeed; } 
 
