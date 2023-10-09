@@ -72,19 +72,19 @@ const int motor2MaximumSpeed=100;
 int       motor2StopState=HIGH;//Stope state of motor (HIGH means STOP) and LOW means Start
 
 
-const char *ssid = "POCO X3";
-const char *password = "chamooda";
+const char *ssid = "Skyguy";
+const char *password = "TheForce";
 
 WebServer server(80);
 
 const int led = 13; // unused
-#define DHTPIN 14   // Pin connected to DHT sensor
-#define DHTTYPE DHT22  
-DHT dht(DHTPIN, DHTTYPE);
+// #define DHTPIN 14   // Pin connected to DHT sensor
+// #define DHTTYPE DHT22  
+// DHT dht(DHTPIN, DHTTYPE);
 
 // MQ sensor settings
-#define METHANE_SENSOR_AOUT 36  // Analog pin connected to MQ Methane sensor
-#define CO_SENSOR_AOUT 35       // Analog pin connected to MQ Carbon Monoxide sensor
+#define METHANE_SENSOR_AOUT 32  // Analog pin connected to MQ Methane sensor
+#define CO_SENSOR_AOUT 34       // Analog pin connected to MQ Carbon Monoxide sensor
 #define MQ_SENSOR_RL 10.0       // Load resistance value for MQ sensors
 
 const int MQ4 = 4;
@@ -93,8 +93,8 @@ MQUnifiedsensor methaneSensor("MQ-4", METHANE_SENSOR_AOUT, MQ_SENSOR_RL, MQ4);
 MQUnifiedsensor coSensor("MQ-7", CO_SENSOR_AOUT, MQ_SENSOR_RL, MQ7);
 
 
-float Temperature = 0.0;
-float Humidity = 0.0;
+// float Temperature = 0.0;
+// float Humidity = 0.0;
 float Methane = 0.0;
 float CarbonMonoxide = 0.0;
 
@@ -245,14 +245,14 @@ HTML_page += "</head>\n";
 HTML_page += "<body>\n";
 HTML_page += "<div class='App'>\n";
 HTML_page += "<div class='Sensor'>\n";
-HTML_page += "<div class='dht'>\n";
-HTML_page += "<h1>Temperature: " + String(Temperature) + "°C</h1>\n";
-HTML_page += "<h1>Humidity: " + String(Humidity) + "%</h1>\n";
-HTML_page += "</div>\n";
-HTML_page += "<br/>\n";
+// HTML_page += "<div class='dht'>\n";
+// // HTML_page += "<h1>Temperature: " + String(Temperature) + "°C</h1>\n";
+// // HTML_page += "<h1>Humidity: " + String(Humidity) + "%</h1>\n";
+// HTML_page += "</div>\n";
+// HTML_page += "<br/>\n";
 HTML_page += "<div class='MQ'>\n";
-HTML_page += "<h1>Methane Level: " + String(Methane) + "</h1>\n";
-HTML_page += "<h1>Carbon Monoxide: " + String(CarbonMonoxide) + "</h1>\n";
+HTML_page += "<h1>Methane Level: " + String(Methane) + " ppm</h1>\n";
+HTML_page += "<h1>Carbon Monoxide: " + String(CarbonMonoxide) + " ppm</h1>\n";
 HTML_page += "</div>\n";
 HTML_page += "</div>\n";
 HTML_page += "<div class='Controls'>\n";
@@ -267,16 +267,10 @@ HTML_page += "</div>\n";
 HTML_page += "</div>\n";
 HTML_page += "<div class='Footer'>\n";
 HTML_page += "<h1>Direction</h1>\n";
-HTML_page += "<a class='button' id='dir2' onclick='toggleDirection(\"dir2\")' href='/direction?dir=";
-HTML_page += String(motor2Direction == CW ? "m2CCW" : "m2CW").c_str();
-HTML_page += "'>"; 
-HTML_page += String(motor2Direction == CW ? "Clockwise" : "Counter-Clockwise").c_str(); 
-HTML_page += "</a>\n";
-HTML_page += "<a class='button' id='StartStop2' onclick='toggleStartStop(\"StartStop2\")' href='/stop?do=";
-HTML_page += String(motor2StopState == HIGH ? "m2Start" : "m2Stop").c_str();
-HTML_page += "'>";
-HTML_page += String(motor2StopState == HIGH ? "Start" : "Stop").c_str();
-HTML_page +="</a>\n";
+HTML_page += "<a class='button' id='dir1CW' href='/direction?dir=m1CW'>Clockwise</a>";
+HTML_page += "<a class='button' id='dir1CCW' href='/direction?dir=m1CCW'>Anti-Clockwise</a>";
+HTML_page += "<a class='button' id='StartStop1Start' href='/stop?do=m1Start'>Start</a>";
+HTML_page += "<a class='button' id='StartStop1Stop' href='/stop?do=m1Stop'>Stop</a>";
 HTML_page += "</div>\n";
 HTML_page += "</div>\n";
 HTML_page += "<div class='motor2'>\n";
@@ -290,15 +284,10 @@ HTML_page += "</div>\n";
 HTML_page += "</div>\n";
 HTML_page += "<div class='Footer'>\n";
 HTML_page += "<h1>Direction</h1>\n";
-HTML_page += "<a class='button' id='dir2' onclick='toggleDirection(\"dir2\")' href='/direction?dir=";
-HTML_page += String(motor2Direction == CW ? "m2CCW" : "m2CW").c_str(); 
-HTML_page +="'>";
-HTML_page +=String(motor2Direction == CW ? "Clockwise" : "Counter-Clockwise").c_str();
-HTML_page += "</a>\n";
-HTML_page += "<a class='button' id='StartStop2' onclick='toggleStartStop(\"StartStop2\")' href='/stop?do="; 
-HTML_page += String(motor2StopState == HIGH ? "m2Start" : "m2Stop").c_str(); 
-HTML_page += "'>"; 
-HTML_page += String(motor2StopState == HIGH ? "Start" : "Stop").c_str();
+HTML_page += "<a class='button' id='dir2CW' href='/direction?dir=m2CW'>Clockwise</a>";
+HTML_page += "<a class='button' id='dir2CCW' href='/direction?dir=m2CCW'>Anti-Clockwise</a>";
+HTML_page += "<a class='button' id='StartStop2Start' href='/stop?do=m2Start'>Start</a>";
+HTML_page += "<a class='button' id='StartStop2Stop' href='/stop?do=m2Stop'>Stop</a>";
 HTML_page += "</a>\n";
 HTML_page += "</div>\n";
 HTML_page += "</div>\n";
@@ -307,45 +296,9 @@ HTML_page += "</div>\n";
 HTML_page += "</div>\n";
 HTML_page += "<script type='text/javascript'>\n";
 HTML_page += "function rangeSlide(value, id, linkId) {\n";
-HTML_page += "document.getElementById(id).textContent = value;\n";
-HTML_page += "var link = document.getElementById(linkId);\n";
+HTML_page += "document.getElementsByClassname(id)[0].textContent = value;\n";
+HTML_page += "var link = document.getElementsByClassName(linkId)[0];\n";
 HTML_page += "link.href = '/speed?' + linkId + '=' + value;\n";
-HTML_page += "}\n";
-HTML_page += "function toggleDirection(buttonId) {\n";
-HTML_page += "var button = document.getElementById(buttonId);\n";
-HTML_page += "if (button.innerHTML === 'Clockwise') {\n";
-HTML_page += "button.innerHTML = 'Anti-Clockwise';\n";
-HTML_page += "if (buttonId === 'dir1') {\n";
-HTML_page += "button.setAttribute('href', '/direction?dir=m1CCW');\n";
-HTML_page += "} else if (buttonId === 'dir2') {\n";
-HTML_page += "button.setAttribute('href', '/direction?dir=m2CCW');\n";
-HTML_page += "}\n";
-HTML_page += "} else {\n";
-HTML_page += "button.innerHTML = 'Clockwise';\n";
-HTML_page += "if (buttonId === 'dir1') {\n";
-HTML_page += "button.setAttribute('href', '/direction?dir=m1CW');\n";
-HTML_page += "} else if (buttonId === 'dir2') {\n";
-HTML_page += "button.setAttribute('href', '/direction?dir=m2CW');\n";
-HTML_page += "}\n";
-HTML_page += "}\n";
-HTML_page += "}\n";
-HTML_page += "function toggleStartStop(buttonId) {\n";
-HTML_page += "var button = document.getElementById(buttonId);\n";
-HTML_page += "if (button.innerHTML === 'Start') {\n";
-HTML_page += "button.innerHTML = 'Stop';\n";
-HTML_page += "if (buttonId === 'StartStop1') {\n";
-HTML_page += "button.setAttribute('href', '/stop?do=m1Stop');\n";
-HTML_page += "} else if (buttonId === 'StartStop2') {\n";
-HTML_page += "button.setAttribute('href', '/stop?do=m2Stop');\n";
-HTML_page += "}\n";
-HTML_page += "} else {\n";
-HTML_page += "button.innerHTML = 'Start';\n";
-HTML_page += "if (buttonId === 'StartStop1') {\n";
-HTML_page += "button.setAttribute('href', '/stop?do=m1Start');\n";
-HTML_page += "} else if (buttonId === 'StartStop2') {\n";
-HTML_page += "button.setAttribute('href', '/stop?do=m2Start');\n";
-HTML_page += "}\n";
-HTML_page += "}\n";
 HTML_page += "}\n";
 HTML_page += "</script>\n";
 HTML_page += "</body>\n";
@@ -426,16 +379,16 @@ void loop(void) {
   }else{
      motor.rotate(motor2, motor2Speed, motor2Direction);//run motor2 at motor2Speed% speed in motor2Direction 
   }
-  float temperature = dht.readTemperature();
-  float humidity = dht.readHumidity();
+  // float temperature = dht.readTemperature();
+  // float humidity = dht.readHumidity();
 
   // Read methane and carbon monoxide levels from MQ sensors
   float methaneLevel = methaneSensor.readSensor();
   float carbonMonoxide = coSensor.readSensor();
 
   // Update the sensor data variables
-  Temperature = temperature;
-  Humidity = humidity;
+  // Temperature = temperature;
+  // Humidity = humidity;
   Methane = methaneLevel;
   CarbonMonoxide = carbonMonoxide;
   delay(100);  
