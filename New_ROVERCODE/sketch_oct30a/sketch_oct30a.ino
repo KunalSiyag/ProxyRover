@@ -1,20 +1,15 @@
 #include <WiFi.h>
 #include "ArduinoJson.h"
 #include <WebSocketClient.h>
-#include <DHT.h>
 const char* ssid = "Skyguy";
 const char* password = "TheForce";
 char path[] = "/";
-char host[] = "192.168.38.239:8082";
-String IP ="192.168.38.239";
+char host[] = "192.168.73.160:8082";
+String IP ="192.168.73.160";
 WebSocketClient webSocketClient;
 String Direction;
 // Use WiFiClient class to create TCP connections
 WiFiClient client;
-
-#define DHTTYPE DHT11 // Type of DHT sensor
-
-
 
 int motor1Pin1=18;
 int motor1Pin2=5;
@@ -30,9 +25,7 @@ const int resolution=8;
 int Speed=155;
 const int mq7Pin = 32; 
 const int mq4Pin = 34;
-const int irSensorPin = 2; // Digital pin for IR sensor (add pin number)
-const int DHTPIN = 7; // Digital pin connected to the DHT sensor
-DHT dht(DHTPIN, DHTTYPE);
+
 void setup() {
   Serial.begin(115200);
   delay(10);
@@ -54,13 +47,6 @@ void setup() {
 
     pinMode(mq7Pin, INPUT);
     pinMode(mq4Pin, INPUT);
-    // Set the pinMode for the digital pin to INPUT
-    pinMode(DHTPIN, INPUT);
-
-    // Your existing setup code
-    dht.begin();
-    pinMode(irSensorPin, INPUT);
-
 
 
   // We start by connecting to a WiFi network
@@ -86,7 +72,7 @@ void setup() {
   
 
   // Connect to the websocket server
-  if (client.connect("192.168.38.239", 8082)) {
+  if (client.connect("192.168.73.160", 8082)) {
     Serial.println("Connected");
   } else {
     Serial.println("Connection failed.");
@@ -191,7 +177,7 @@ void processReceivedJSON(String jsonStr) {
 
 void loop() {
   String data;
- 
+  String data_send;
 
   if (client.connected()) {
     
@@ -238,22 +224,18 @@ void loop() {
     // Read sensor values
     int mq7Value = analogRead(mq7Pin);
     int mq4Value = analogRead(mq4Pin);
-    // Read temperature and humidity
-    float temperature = dht.readTemperature(); 
-    float humidity = dht.readHumidity();
     // Create a JSON object to store the sensor data
     DynamicJsonDocument sensorData(128);
     sensorData["mq7"] = mq7Value;
     sensorData["mq4"] = mq4Value;
-    sensorData["temperature"] = temperature;
-    sensorData["humidity"] = humidity;
-
+    
     // Convert the JSON object to a string
-    serializeJson(sensorData, data);
+    serializeJson(sensorData, data_send);
 
     // Send sensor data over the WebSocket
-    webSocketClient.sendData(data);
 
+    webSocketClient.sendData(data_send);
+    Serial.println(data_send);
     // Delay or adjust as needed
     delay(1000);
     
