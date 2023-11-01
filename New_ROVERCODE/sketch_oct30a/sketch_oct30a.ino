@@ -8,8 +8,8 @@
 const char* ssid = "Skyguy";
 const char* password = "TheForce";
 char path[] = "/";
-char host[] = "192.168.114.160:8082";
-String IP ="192.168.114.160";
+char host[] = "192.168.42.160:8082";
+String IP ="192.168.42.160";
 WebSocketClient webSocketClient;
 String Direction;
 // Use WiFiClient class to create TCP connections
@@ -27,6 +27,7 @@ const int freq= 30000;
 const int pwmChannel=0;
 const int resolution=8;
 int Speed=155;
+
 const int mq7Pin = 33; 
 const int mq4Pin = 25;
 const int irsensor = 26;
@@ -76,8 +77,11 @@ void setup() {
   ledcAttachPin(Enable2Pin, pwmChannel);
    
 
-    pinMode(mq7Pin, INPUT);
-    pinMode(mq4Pin, INPUT);
+  pinMode(mq7Pin, INPUT);
+  pinMode(mq4Pin, INPUT);
+  pinMode(servoPin,OUTPUT);
+  pinMode(DHTPIN,INPUT);
+    
 
 
   // We start by connecting to a WiFi network
@@ -103,10 +107,11 @@ void setup() {
   
 
   // Connect to the websocket server
-  if (client.connect("192.168.114.160", 8082)) {
+  if (client.connect("192.168.42.160", 8082)) {
     Serial.println("Connected");
   } else {
     Serial.println("Connection failed.");
+    
     while(1) {
       // Hang on failure
     }
@@ -162,9 +167,9 @@ void Backward()
 void Forward()
 {
   ledcWrite(pwmChannel, Speed);
-  digitalWrite(motor1Pin1,HIGH);
+  digitalWrite(motor1Pin1,HIGH);//FRONT TWO WHEELS
   digitalWrite(motor1Pin2,LOW);
-  digitalWrite(motor2Pin1,LOW);
+  digitalWrite(motor2Pin1,LOW);//BACK TWO WHEELS
   digitalWrite(motor2Pin2,HIGH);
 }
 
@@ -203,8 +208,6 @@ void processReceivedJSON(String jsonStr) {
 
   
 }
-
-
 
 
 void loop() {
